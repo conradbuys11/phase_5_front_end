@@ -1,23 +1,22 @@
-import logo from './logo.svg';
 import './App.css';
+import React, {useEffect, useState} from 'react';
+import HomePage from './components/Homepage';
+import 'semantic-ui-css/semantic.min.css'
 
-function App() {
+const MyContext = React.createContext({farts: 3})
+
+const App = () => {
+  // useEffect(() => {
+  //   fetch('http://localhost:3001/users/1')
+  //   .then(rsp => rsp.json())
+  //   .then(user => MyContext.user = user)
+  // },[])
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <MyContext.Provider>
+        <HomePage />
+      </MyContext.Provider>
     </div>
   );
 }
