@@ -73,6 +73,7 @@ const HomePage = props => {
         allDay: true,
         backgroundColor: parseUrgency(todo.urgency),
         textColor: 'black',
+        classNames: ['toDo'],
         start: new Date((Date.now())).toISOString()
       }
       setEvents([...events, parsedTodo])
