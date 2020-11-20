@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import Header from './Header'
@@ -53,8 +53,42 @@ const HomePage = props => {
         {title: 'test event', start: '2020-11-18T10:45:00', end: '2020-11-18T13:00:00'}
     ])
 
+    useEffect(() => {
+      console.log(new Date((Date.now())).toISOString())
+    }, [])
+
     const makeNewEvent = event => {
-        setEvents([...events, event])
+      let parsedEvent = {
+        title: event._name,
+        start: new Date((Date.now())).toISOString()
+      }
+      setEvents([...events, parsedEvent])
+        // setEvents([...events, event])
+    }
+
+    const makeNewToDo = todo => {
+      let parsedTodo = {
+        title: todo._name,
+        //display: 'background',
+        allDay: true,
+        backgroundColor: parseUrgency(todo.urgency),
+        textColor: 'black',
+        start: new Date((Date.now())).toISOString()
+      }
+      setEvents([...events, parsedTodo])
+    }
+
+    const parseUrgency = urgency => {
+      switch(urgency){
+        case 'High':
+          return 'red'
+        case 'Medium':
+          return 'yellow'
+        case 'Low':
+          return 'green'
+        default:
+          return 'white'
+      }
     }
 
     return(
@@ -62,7 +96,7 @@ const HomePage = props => {
             <InlineStyle />
             <Container text>
                 <Header />
-                <CreateNewEvent makeNewEvent={makeNewEvent}/>
+                <CreateNewEvent makeNewEvent={makeNewEvent} makeNewToDo={makeNewToDo}/>
             </Container>
             <Container>
                 <FullCalendar

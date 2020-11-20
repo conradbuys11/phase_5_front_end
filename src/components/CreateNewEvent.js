@@ -24,19 +24,19 @@ const CreateNewEvent = props => {
 
     useEffect(() => {
         //if newevent has a name & a date
-        if(!customTruthy(newEvent.name) && !customTruthy(newEvent.date) && eventSubmit !== ''){
+        if(!customTruthy(newEvent._name) && !customTruthy(newEvent.date) && eventSubmit !== ''){
             setEventSubmit('')
         }
-        else if((customTruthy(newEvent.name) || customTruthy(newEvent.date)) && eventSubmit !== 'disabled'){
+        else if((customTruthy(newEvent._name) || customTruthy(newEvent.date)) && eventSubmit !== 'disabled'){
             setEventSubmit('disabled')
         }
     },[newEvent])
 
     useEffect(() => {
-        if(!customTruthy(newToDo.name) && !customTruthy(newToDo.urgency) && toDoSubmit !== ''){
+        if(!customTruthy(newToDo._name) && !customTruthy(newToDo.urgency) && toDoSubmit !== ''){
             setToDoSubmit('')
         }
-        else if((customTruthy(newToDo.name) || customTruthy(newToDo.urgency)) && toDoSubmit !== 'disabled'){
+        else if((customTruthy(newToDo._name) || customTruthy(newToDo.urgency)) && toDoSubmit !== 'disabled'){
             setToDoSubmit('disabled')
         }
     },[newToDo])
@@ -46,7 +46,7 @@ const CreateNewEvent = props => {
             case 0:
                 //console.log(e)
                 if(e.target.attributes.type.value === 'text'){
-                    setNewEvent({...newEvent, name: e.target.value})
+                    setNewEvent({...newEvent, _name: e.target.value})
                 }
                 else if(e.target.attributes.type.value === 'datetime-local'){
                     setNewEvent({...newEvent, date: e.target.value})
@@ -56,7 +56,7 @@ const CreateNewEvent = props => {
             case 1:
                 console.log(e)
                 if(e.type === 'change'){
-                    setNewToDo({...newToDo, name: e.target.value})
+                    setNewToDo({...newToDo, _name: e.target.value})
                 }
                 else if(e.type === 'click'){
                     setNewToDo({...newToDo, urgency: e.target.innerText})
@@ -68,10 +68,13 @@ const CreateNewEvent = props => {
     }
 
     const handleSubmit = (e, type) => {
+        e.preventDefault()
         switch(type){
             case 'event':
+                props.makeNewEvent(newEvent)
                 break;
             case 'todo':
+                props.makeNewToDo(newToDo)
                 break;
             default:
                 console.log('submitting event/todo failed')
