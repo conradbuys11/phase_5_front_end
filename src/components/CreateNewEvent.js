@@ -24,19 +24,19 @@ const CreateNewEvent = props => {
 
     useEffect(() => {
         //if newevent has a name & a date
-        if(!customTruthy(newEvent._name) && !customTruthy(newEvent.date) && eventSubmit !== ''){
+        if(!customTruthy(newEvent.title) && !customTruthy(newEvent.date) && eventSubmit !== ''){
             setEventSubmit('')
         }
-        else if((customTruthy(newEvent._name) || customTruthy(newEvent.date)) && eventSubmit !== 'disabled'){
+        else if((customTruthy(newEvent.title) || customTruthy(newEvent.date)) && eventSubmit !== 'disabled'){
             setEventSubmit('disabled')
         }
     },[newEvent])
 
     useEffect(() => {
-        if(!customTruthy(newToDo._name) && !customTruthy(newToDo.urgency) && toDoSubmit !== ''){
+        if(!customTruthy(newToDo.title) && !customTruthy(newToDo.urgency) && toDoSubmit !== ''){
             setToDoSubmit('')
         }
-        else if((customTruthy(newToDo._name) || customTruthy(newToDo.urgency)) && toDoSubmit !== 'disabled'){
+        else if((customTruthy(newToDo.title) || customTruthy(newToDo.urgency)) && toDoSubmit !== 'disabled'){
             setToDoSubmit('disabled')
         }
     },[newToDo])
@@ -46,7 +46,7 @@ const CreateNewEvent = props => {
             case 0:
                 //console.log(e)
                 if(e.target.attributes.type.value === 'text'){
-                    setNewEvent({...newEvent, _name: e.target.value})
+                    setNewEvent({...newEvent, title: e.target.value})
                 }
                 else if(e.target.attributes.type.value === 'datetime-local'){
                     setNewEvent({...newEvent, date: e.target.value})
@@ -56,7 +56,7 @@ const CreateNewEvent = props => {
             case 1:
                 console.log(e)
                 if(e.type === 'change'){
-                    setNewToDo({...newToDo, _name: e.target.value})
+                    setNewToDo({...newToDo, title: e.target.value})
                 }
                 else if(e.type === 'click'){
                     setNewToDo({...newToDo, urgency: e.target.innerText})

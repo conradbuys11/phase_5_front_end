@@ -54,21 +54,72 @@ const HomePage = props => {
     ])
 
     useEffect(() => {
-      console.log(new Date((Date.now())).toISOString())
+
+      fetch('http://localhost:3001/events_and_to_dos')
+      .then(rsp => rsp.json())
+      .then(parseEventsFromBackEnd)
+      .catch()
     }, [])
+
+    const parseEventsFromBackEnd = _events => {
+      let myEvents = _events.map(event => {
+        if(event.urgency == null){
+          return {
+            id: event.id,
+            title: event.title,
+            start: event.date
+          }
+        }
+        else{
+          return{
+            title: event.title,
+            allDay: true,
+            backgroundColor: parseUrgency(event.urgency),
+            textColor: 'black',
+            classNames: ['toDo'],
+            start: new Date((Date.now())).toISOString()
+          }
+        }
+      })
+      setEvents(events.concat(myEvents))
+    }
+
+    // const parseToDosFromBackEnd = toDos => {
+    //   let myToDos = toDos.map(toDo => {
+    //     return{
+    //       title: toDo.title,
+    //       allDay: true,
+    //       backgroundColor: parseUrgency(toDo.urgency),
+    //       textColor: 'black',
+    //       classNames: ['toDo'],
+    //       start: new Date((Date.now())).toISOString()
+    //     }
+    //   })
+    //   setEvents(events.concat(myToDos))
+    // }
 
     const makeNewEvent = event => {
       let parsedEvent = {
-        title: event._name,
-        start: new Date((Date.now())).toISOString()
+        title: event.title,
+        start: event.date
       }
       setEvents([...events, parsedEvent])
+      fetch('http://localhost:3001/events', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: parsedEvent.title, date: parsedEvent.start, calendar_id: 1
+        })
+      }).then(resp => resp.json())
+      .then()
         // setEvents([...events, event])
     }
 
     const makeNewToDo = todo => {
-      let parsedTodo = {
-        title: todo._name,
+      let parsedToDo = {
+        title: todo.title,
         //display: 'background',
         allDay: true,
         backgroundColor: parseUrgency(todo.urgency),
@@ -76,7 +127,17 @@ const HomePage = props => {
         classNames: ['toDo'],
         start: new Date((Date.now())).toISOString()
       }
-      setEvents([...events, parsedTodo])
+      setEvents([...events, parsedToDo])
+      fetch('http://localhost:3001/to_dos/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: parsedToDo.title, urgency: todo.urgency, calendar_id: 1
+        })
+      }).then(resp => resp.json())
+      .then()
     }
 
     const parseUrgency = urgency => {
