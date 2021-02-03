@@ -91,25 +91,25 @@ const CreateNewEvent = props => {
     return(
         <Accordion>
             <Accordion.Title active={activeIndex === 0} index={0} onClick={handleClick}>
-                Create New Event
+                <Button color='blue'>Create New Event</Button>
             </Accordion.Title>
             
             <Accordion.Content active={activeIndex === 0}>
                 <Form>
-                    <Form.Input label='Name' placeholder='My New Event' onChange={handleChange}/>
-                    <Form.Field label='Date' control='input' type='datetime-local' onChange={handleChange}/>
+                    <Form.Input required label='Name' placeholder='My New Event' onChange={handleChange}/>
+                    <Form.Field required label='Date' control='input' type='datetime-local' onChange={handleChange}/>
                     <Button type='submit' className={eventSubmit} onClick={e => handleSubmit(e, 'event')}>Submit</Button>
                 </Form>
             </Accordion.Content>
 
             <Accordion.Title active={activeIndex === 1} index={1} onClick={handleClick}>
-                Create New To-Do
+                <Button color='teal'>Create New To-Do</Button>
             </Accordion.Title>
             
             <Accordion.Content active={activeIndex === 1}>
                 <Form>
-                    <Form.Input label='Name' placeholder='My New To-Do' onChange={handleChange}/>
-                    <Form.Select label='Urgency' options={urgencyOptions} placeholder='Urgency' onChange={handleChange}/>
+                    <Form.Input required label='Name' placeholder='My New To-Do' onChange={handleChange}/>
+                    <Form.Select required label='Urgency' options={urgencyOptions} placeholder='Urgency' onChange={handleChange}/>
                     <Button type='submit' className={toDoSubmit} onClick={e => handleSubmit(e, 'todo')}>Submit</Button>
                 </Form>
             </Accordion.Content>

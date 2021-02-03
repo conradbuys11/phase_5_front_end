@@ -1,9 +1,10 @@
 import React, {useState, useContext, useEffect} from 'react'
 import ButtonHomepage from './ButtonHomepage'
 import ButtonUserIcon from './ButtonUserIcon'
+import { Header } from 'semantic-ui-react'
 // import { MyContext } from '../App'
 
-const Header = props => {
+const EasyHeader = props => {
     // const user = useContext(MyContext)
     const [user, setUser] = useState({})
 
@@ -15,12 +16,13 @@ const Header = props => {
 
 
     return(
-        <div>
-            User's name: {user.full_name}
-            <ButtonHomepage />
-            <ButtonUserIcon />
-        </div>
+        // <div>
+        //     User's name: {user.full_name}
+        //     <ButtonHomepage />
+        //     <ButtonUserIcon />
+        // </div>
+        <Header as='h1' textAlign='center' content='Easy Schedule' style={{paddingTop: '20px'}}/>
     )
 }
 
-export default Header
+export default EasyHeader

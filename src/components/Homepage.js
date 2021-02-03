@@ -1,9 +1,13 @@
 import React, {useEffect, useState} from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
-import Header from './Header'
+import interactionPlugin from '@fullcalendar/interaction'
+import EasyHeader from './EasyHeader'
 import CreateNewEvent from './CreateNewEvent'
-import { Container } from 'semantic-ui-react'
+import EditEvent from './EditEvent'
+import { Container, Grid, Divider } from 'semantic-ui-react'
+import ToDoList from './ToDoList'
+import UpcomingEventList from './UpcomingEventList'
 // import { Dropdown, Menu, Input, Form, Accordion } from 'semantic-ui-react'
 
 const InlineStyle = () => (
@@ -49,9 +53,8 @@ const InlineStyle = () => (
 const HomePage = props => {
 
     //const [user, setUser] = useState(undefined) ????
-    const [events, setEvents] = useState([
-        {title: 'test event', start: '2020-11-18T10:45:00', end: '2020-11-18T13:00:00'}
-    ])
+    const [events, setEvents] = useState([])
+    const [editingEvent, setEditing] = useState(null)
 
     useEffect(() => {
 
@@ -67,21 +70,26 @@ const HomePage = props => {
           return {
             id: event.id,
             title: event.title,
-            start: event.date
+            start: event.date.replace('Z',''),
+            classNames: ['event']
           }
+        }
+        else if(!event.is_completed){
+            return {
+              id: event.id,
+              title: event.title,
+              allDay: true,
+              backgroundColor: parseUrgency(event.urgency),
+              textColor: 'black',
+              classNames: ['toDo'],
+              start: new Date((Date.now())).toISOString()
+            }
         }
         else{
-          return{
-            title: event.title,
-            allDay: true,
-            backgroundColor: parseUrgency(event.urgency),
-            textColor: 'black',
-            classNames: ['toDo'],
-            start: new Date((Date.now())).toISOString()
-          }
+          return null
         }
       })
-      setEvents(events.concat(myEvents))
+      setEvents(events.concat(myEvents.filter(element => element !== null)))
     }
 
     // const parseToDosFromBackEnd = toDos => {
@@ -99,45 +107,73 @@ const HomePage = props => {
     // }
 
     const makeNewEvent = event => {
-      let parsedEvent = {
-        title: event.title,
-        start: event.date
-      }
-      setEvents([...events, parsedEvent])
+      // let parsedEvent = {
+      //   title: event.title,
+      //   start: event.date,
+      //   classNames: ['event']
+      // }
+      // setEvents([...events, parsedEvent])
       fetch('http://localhost:3001/events', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          name: parsedEvent.title, date: parsedEvent.start, calendar_id: 1
+          title: event.title, date: event.date, calendar_id: 1
         })
       }).then(resp => resp.json())
-      .then()
+      .then(data => {
+        console.log(data)
+        let parsedEvent = {
+          id: data.id,
+          title: event.title,
+          start: event.date,
+          classNames: ['event']
+        }
+        setEvents([...events, parsedEvent])
+      })
         // setEvents([...events, event])
     }
 
+    const cancel = () => {
+      setEditing(null)
+      listOfEventsSorted()
+    }
+
     const makeNewToDo = todo => {
-      let parsedToDo = {
-        title: todo.title,
-        //display: 'background',
-        allDay: true,
-        backgroundColor: parseUrgency(todo.urgency),
-        textColor: 'black',
-        classNames: ['toDo'],
-        start: new Date((Date.now())).toISOString()
-      }
-      setEvents([...events, parsedToDo])
+      // let parsedToDo = {
+      //   title: todo.title,
+      //   //display: 'background',
+      //   allDay: true,
+      //   backgroundColor: parseUrgency(todo.urgency),
+      //   textColor: 'black',
+      //   classNames: ['toDo'],
+      //   start: new Date((Date.now())).toISOString()
+      // }
+      // setEvents([...events, parsedToDo])
       fetch('http://localhost:3001/to_dos/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          title: parsedToDo.title, urgency: todo.urgency, calendar_id: 1
+          title: todo.title, urgency: todo.urgency, calendar_id: 1
         })
       }).then(resp => resp.json())
-      .then()
+      .then(data => {
+        console.log(data)
+        let parsedToDo = {
+          id: data.id,
+          title: todo.title,
+          //display: 'background',
+          allDay: true,
+          backgroundColor: parseUrgency(todo.urgency),
+          textColor: 'black',
+          classNames: ['toDo'],
+          start: new Date((Date.now())).toISOString()
+        }
+        setEvents([...events, parsedToDo])
+      })
     }
 
     const parseUrgency = urgency => {
@@ -153,19 +189,123 @@ const HomePage = props => {
       }
     }
 
+    const getAllToDos = () => {
+      // console.log(events)
+      // console.log(events.length > 0)
+      if(events.length > 0){
+        // console.log(events[0].classNames)
+        let toDos = events.filter(event => event.classNames.includes("toDo"))
+        return toDos
+      }
+      else{
+        return []
+      }
+    }
+
+    const getAllEvents = () => {
+      if(events.length > 0){
+        let _events = events.filter(event => event.classNames.includes("event"))
+        return _events
+      }
+      else{
+        return []
+      }
+    }
+
+    const completeToDo = index => {
+      fetch(`http://localhost:3001/to_dos/${index}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          is_completed: true
+        })
+      }).then(resp => resp.json())
+      .then(setEvents(events.filter(event => !(event.id === index && event.classNames.find(name => name === 'toDo')))))
+    }
+
+    const eventEditPopup = event => {
+      
+      let _event
+      event.classNames.includes("event") ? _event = events.find(element => element.id == event._def.publicId && element.classNames.includes("event")) : _event = events.find(element => element.id == event._def.publicId && element.classNames.includes("toDo"))
+      setEditing(null)
+      setEditing(_event)
+    }
+
+    const editEventOrToDo = (event, isToDo) => {
+      let newEvents = events.map(element => {
+        if(element.id !== event.id){
+          return element
+        }
+        else{
+          if(isToDo && element.classNames.includes("toDo")){ //if the thing we're replacing is a to-do, and the element we're looking at is a to-do, then replace it
+            return event
+          }
+          else if(!isToDo && element.classNames.includes("event")){ //if the thing we're replacing is an event, and the element we're looking at is an event, then replace it
+            return event
+          }
+          else{
+            return element
+          }
+        }
+      })
+      setEvents(newEvents)
+      setEditing(null)
+    }
+
+    const deleteEventOrToDo = (event, isToDo) => {
+      let newEvents
+      if(isToDo){
+        newEvents = events.filter(element => !(event.id == element.id && element.classNames.includes("toDo")))
+      }
+      else{
+        newEvents = events.filter(element => !(event.id == element.id && element.classNames.includes("event")))
+      }
+      setEvents(newEvents)
+      setEditing(null)
+    }
+
+    const listOfEventsSorted = () => {
+      let datesQuestionMark = events.filter(event => event.classNames.includes("event"))
+      // console.log(Date.now())
+      // console.log(Date.parse(new Date(datesQuestionMark[0].start)) - Date.now())
+      // for(let i = 0; i < datesQuestionMark.length; i++){
+      //   console.log(datesQuestionMark[i].start)
+      // }
+      datesQuestionMark.sort((a, b) => Date.parse(new Date(a.start)) - Date.parse(new Date(b.start)))
+      datesQuestionMark = datesQuestionMark.filter(element => Date.parse(new Date(element.start)) - Date.now() > 0)
+      console.log(datesQuestionMark)
+      return datesQuestionMark
+    }
+
     return(
         <div className='hehe-conrad'>
-            <InlineStyle />
-            <Container text>
-                <Header />
-                <CreateNewEvent makeNewEvent={makeNewEvent} makeNewToDo={makeNewToDo}/>
-            </Container>
+            {/* <InlineStyle /> */}
+            <EasyHeader />
+            <Divider />
+            { editingEvent !== null ? <EditEvent event={editingEvent} editEvent={editEventOrToDo} deleteEvent={deleteEventOrToDo} cancel={cancel} /> : null}
             <Container>
                 <FullCalendar
-                    plugins={[ dayGridPlugin ]}
+                    plugins={[ dayGridPlugin, interactionPlugin ]}
                     events={events}
+                    height={500}
+                    eventClick={info => {eventEditPopup(info.event)}}
                 />
             </Container>
+            <div style={{marginTop:'5%'}}>
+                <Grid columns={3} divided>
+                  <Grid.Column>
+                    {events !== [] ? <ToDoList toDos={getAllToDos()} completeToDo={completeToDo}/> : 'loading...'}
+                  </Grid.Column>
+                  <Grid.Column>
+                    <CreateNewEvent makeNewEvent={makeNewEvent} makeNewToDo={makeNewToDo}/>
+                  </Grid.Column>
+                  <Grid.Column>
+                    {events !== [] ? <UpcomingEventList events={listOfEventsSorted()} /> : 'loading...'}
+                  </Grid.Column>
+                </Grid>
+            </div>
         </div>
     )
 }
